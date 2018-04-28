@@ -17,13 +17,16 @@ import time
 import json
 import time
 import datetime
-
+import socket
 
 # Creating a greengrass core sdk client
 client = greengrasssdk.client('iot-data')
 
 # Retrieving platform information to send from Greengrass Core
-my_platform = platform.platform()
+strPlatform = platform.platform()
+
+# get the hostname top publish as the vehicle_vin
+strHostname=socket.gethostname()
 
 
 # When deployed to a Greengrass core, this code will be executed immediately
@@ -35,9 +38,10 @@ my_platform = platform.platform()
 
 def send_status():
     strEpochTime=str(int(time.time()))
-    strVehicleVin='WBA3B9G59ENR92112'
-    strTopic = 'ccdtw/' + strVehicleVin + '/ggcstatus'
-    strMessage='{ "time": "' + strEpochTime + '", "vehicle_vin":"' + strVehicleVin + '", "platform":"' + my_platform + '"}'
+    # strVehicleVin='WBA3B9G59ENR92112'
+    strVehicleVin=strHostname
+    strTopic = 'ccdtw/ggcstatus'
+    strMessage='{ "time": "' + strEpochTime + '", "vehicle_vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '"}'
 
     print 'I am going to publish the following message: ' + strMessage
     client.publish(topic=strTopic, payload=strMessage)
@@ -54,4 +58,4 @@ def function_handler(event, context):
     return
 
 def lambda_handler(event, context):
-    return
+    return 'Publishing message from host ' + strHostname + ', (platform: ' + strPlatform + ')'
