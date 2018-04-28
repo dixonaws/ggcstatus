@@ -3,7 +3,7 @@
 #
 
 # ggcstatus.py
-# Publish to topic <vehicle_vin>/ggcstatus using Greengrass core sdk
+# Publish to topic ccdtw/ggcstatus using Greengrass core sdk
 # This lambda function will retrieve underlying platform information and send
 # a status message along with the platform information to the topic <vehicle_vin>/ggcstatus
 # The function will sleep for five seconds, then repeat.  Since the function is
@@ -18,16 +18,22 @@ import json
 import time
 import datetime
 import socket
+import memcache
 
-# Creating a greengrass core sdk client
+# Create a greengrass core sdk client
 client = greengrasssdk.client('iot-data')
+
+# Create a memcache client
+mc = memcache.Client(['127.0.0.1:11211'], debug=0)
 
 # Retrieving platform information to send from Greengrass Core
 strPlatform = platform.platform()
 
-# get the hostname top publish as the vehicle_vin
-strHostname=socket.gethostname()
+# get the hostname to publish as the vehicle_vin
+strVehicleVin=mc.get("VIN")
 
+# set the IoT topic where messages will be published
+strTopic = 'ccdtw/ggcstatus'
 
 # When deployed to a Greengrass core, this code will be executed immediately
 # as a long-lived lambda function (must be cionfigured in the Greengrass Group to
@@ -38,9 +44,7 @@ strHostname=socket.gethostname()
 
 def send_status():
     strEpochTime=str(int(time.time()))
-    # strVehicleVin='WBA3B9G59ENR92112'
-    strVehicleVin=strHostname
-    strTopic = 'ccdtw/ggcstatus'
+
     strMessage='{ "time": "' + strEpochTime + '", "vehicle_vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '"}'
 
     print 'I am going to publish the following message: ' + strMessage
@@ -58,4 +62,4 @@ def function_handler(event, context):
     return
 
 def lambda_handler(event, context):
-    return 'Publishing message from host ' + strHostname + ', (platform: ' + strPlatform + ')'
+    return 'Publishing message from host ' + strVehicleVin + ', (platform: ' + strPlatform + ')'
