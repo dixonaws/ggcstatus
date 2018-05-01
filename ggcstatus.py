@@ -45,7 +45,12 @@ strTopic = 'ccdtw/ggcstatus'
 def send_status():
     strEpochTime=str(int(time.time()))
 
-    strMessage='{ "time": "' + strEpochTime + '", "vehicle_vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '"}'
+    try:
+        strMessage='{ "time": "' + strEpochTime + '", "vehicle_vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '"}'
+    except TypeError:
+        # we'll get this error if memcache is not installed (e.g., we are testing in the Lambda console)
+        strVehicleVin="<testing>"
+        strMessage = '{ "time": "' + strEpochTime + '", "vehicle_vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '"}'
 
     print 'I am going to publish the following message: ' + strMessage
     client.publish(topic=strTopic, payload=strMessage)
