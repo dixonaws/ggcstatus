@@ -8,3 +8,7 @@ greengrasssdk directories in order to run the program or deploy
 - greengrasssdk/
 - greengrass_common/
 - greengrass_ipc_python_sdk/ 
+
+
+the setvin.py utility reads from a configurationi file in /etc/ccdtw/vehicle_vin.conf and sets the 'VIN' key 
+in the local memcache
