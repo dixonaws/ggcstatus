@@ -66,4 +66,7 @@ def function_handler(event, context):
     return
 
 def lambda_handler(event, context):
-    return 'Publishing message from host ' + strVehicleVin + ', (platform: ' + strPlatform + ')'
+    try:
+        return 'Publishing message from host ' + strVehicleVin + ', (platform: ' + strPlatform + ')'
+    except TypeError:
+        return 'Publishing message from host <testing>, (platform: ' + strPlatform + ')'
