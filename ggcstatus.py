@@ -90,3 +90,5 @@ def lambda_handler(event, context):
     except TypeError:
         return 'Publishing message from host <testing>, (platform: ' + dictGgcStatus['platform'] + ')'
 
+
+
