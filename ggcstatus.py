@@ -24,14 +24,13 @@ import os
 # Create a greengrass core sdk client
 client = greengrasssdk.client('iot-data')
 
-# Create a memcache client
-mc = memcache.Client(['127.0.0.1:11211'], debug=0)
-
 # Retrieving platform information to send from Greengrass Core
-strPlatform = platform.platform()
+# open the ccdtw configuration file, read the VIN there, and close
+fileVinConfig=open('/etc/ccdtw/vehicle_vin.conf', 'r')
+strVehicleVin=fileVinConfig.read()
+fileVinConfig.close()
 
-# get the hostname to publish as the vehicle_vin
-strVehicleVin=mc.get("VIN")
+strPlatform = platform.platform()
 
 strStatus="Greengrass Core connected"
 
@@ -42,7 +41,7 @@ strIpAddress=str(s.getsockname()[0])
 strGgcVersion="1.5.0"
 
 # set the IoT topic where messages will be published
-strTopic = 'connectedcar-v2/vehicles/WBA3B9G59ENR92112'
+strTopic = 'connectedcar-v2/vehicles'
 
 # When deployed to a Greengrass core, this code will be executed immediately
 # as a long-lived lambda function (must be configured in the Greengrass Group to
@@ -55,13 +54,12 @@ def send_status():
     strEpochTime=str(int(time.time()))
 
     try:
-        print strGgcVersion
-        strMessage='{ "time": "' + strEpochTime + '", "vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '", "ggc_version":"' + strGgcVersion +'", "ip_address": "' + strIpAddress + '", "status": "' + strStatus + '"}'
+        strMessage='{  "messageType": "ggcstatus", "time": "' + strEpochTime + '", "vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '", "ggc_version":"' + strGgcVersion +'", "ip_address": "' + strIpAddress + '", "status": "' + strStatus + '"}'
     except TypeError:
         # we'll get this error if memcache is not installed (e.g., we are testing in the Lambda console)
         strMessage = '{ "time": "' + strEpochTime + '", "vehicle_vin":"<testing>", "platform":"' + strPlatform + '"}'
 
-    print 'I am going to publish the following message: ' + strMessage
+    print 'I am going to publish the following message ( ' + strMessage + ') to topic ' + strTopic
     client.publish(topic=strTopic, payload=strMessage)
 
     # Asynchronously schedule this function to be run again in 5 seconds

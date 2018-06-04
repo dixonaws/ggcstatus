@@ -8,3 +8,5 @@ zip -r ggcstatus.zip ggcstatus.py greengrasssdk/ greengrass_common/ greengrass_i
 
 # specify profile as appropriate in ~/.aws/credentials; youre user must have permissions to update function code in Lambda
 aws --profile ccdtw lambda update-function-code --function-name ggcstatus --zip-file fileb://ggcstatus.zip --region us-east-1
+
+
