@@ -18,8 +18,10 @@ import json
 import time
 import datetime
 import socket
-import memcache
 import os
+
+# create an empty dictionary; we'll convert it to JSON and send as the IoT message payload
+dictGgcStatus={}
 
 # Create a greengrass core sdk client
 client = greengrasssdk.client('iot-data')
@@ -27,18 +29,25 @@ client = greengrasssdk.client('iot-data')
 # Retrieving platform information to send from Greengrass Core
 # open the ccdtw configuration file, read the VIN there, and close
 fileVinConfig=open('/etc/ccdtw/vehicle_vin.conf', 'r')
-strVehicleVin=fileVinConfig.read()
+
+dictGgcStatus['vin']=fileVinConfig.read()
+# strVehicleVin=fileVinConfig.read()
 fileVinConfig.close()
 
-strPlatform = platform.platform()
+dictGgcStatus['platform']=platform.platform()
 
-strStatus="Greengrass Core connected"
+dictGgcStatus['status']="Greengrass Core connected"
 
 s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
-strIpAddress=str(s.getsockname()[0])
+# strIpAddress=str(s.getsockname()[0])
 
-strGgcVersion="1.5.0"
+dictGgcStatus['ip_address']=str(s.getsockname()[0])
+
+dictGgcStatus['ggc_version']="1.5.0"
+
+dictGgcStatus['message_type']='ggcstatus'
+
 
 # set the IoT topic where messages will be published
 strTopic = 'connectedcar-v2/vehicles'
@@ -51,13 +60,15 @@ strTopic = 'connectedcar-v2/vehicles'
 # a result.
 
 def send_status():
-    strEpochTime=str(int(time.time()))
+    # strEpochTime=str(int(time.time()))
+    dictGgcStatus['time'] = str(int(time.time()))
 
     try:
-        strMessage='{  "messageType": "ggcstatus", "time": "' + strEpochTime + '", "vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '", "ggc_version":"' + strGgcVersion +'", "ip_address": "' + strIpAddress + '", "status": "' + strStatus + '"}'
+        # strMessage='{  "messageType": "ggcstatus", "time": "' + strEpochTime + '", "vin":"' + strVehicleVin + '", "platform":"' + strPlatform + '", "ggc_version":"' + strGgcVersion +'", "ip_address": "' + strIpAddress + '", "status": "' + strStatus + '"}'
+        strMessage=json.dumps(dictGgcStatus)
     except TypeError:
         # we'll get this error if memcache is not installed (e.g., we are testing in the Lambda console)
-        strMessage = '{ "time": "' + strEpochTime + '", "vehicle_vin":"<testing>", "platform":"' + strPlatform + '"}'
+        strMessage = '{ "time": "' + dictGgcStatus['time'] + '", "vehicle_vin":"<testing>", "platform":"' + dictGgcStatus['platform'] + '"}'
 
     print 'I am going to publish the following message ( ' + strMessage + ') to topic ' + strTopic
     client.publish(topic=strTopic, payload=strMessage)
@@ -75,7 +86,7 @@ def function_handler(event, context):
 
 def lambda_handler(event, context):
     try:
-        return 'Publishing message from host ' + strVehicleVin + ', (platform: ' + strPlatform + ')'
+        return 'Publishing message from host ' + dictGgcStatus['vin'] + ', (platform: ' + dictGgcStatus['platform'] + ')'
     except TypeError:
-        return 'Publishing message from host <testing>, (platform: ' + strPlatform + ')'
+        return 'Publishing message from host <testing>, (platform: ' + dictGgcStatus['platform'] + ')'
 
