@@ -1,5 +1,8 @@
 # ggcstatus
-Long running Lambdas function to report basic connectivity status to IoT Cloud.
+Long running Lambda function to report basic connectivity status to IoT Cloud every 5 seconds. 
+Part of the connectedcar-v2 package. Publishes status every 5 seconds to the "connectedcar-v2/vehicles" 
+topic in your AWS account. Your Greengrass group must be configured with a subscription to publish 
+from this Lambda to the IoT Cloud.
 
 Note that the project directory must include the following 
 greengrasssdk directories in order to run the program or deploy
@@ -10,5 +13,3 @@ greengrasssdk directories in order to run the program or deploy
 - greengrass_ipc_python_sdk/ 
 
 
-the setvin.py utility reads from a configurationi file in /etc/ccdtw/vehicle_vin.conf and sets the 'VIN' key 
-in the local memcache
